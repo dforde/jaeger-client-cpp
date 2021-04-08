@@ -238,19 +238,17 @@ option(JAEGERTRACING_PLUGIN "Build dynamic plugin" OFF)
 cmake_dependent_option(BUILD_SHARED_LIBS "Build shared libraries" ON
   "NOT JAEGERTRACING_PLUGIN" OFF)
 
-if(BUILD_SHARED_LIBS)
-  add_library(jaegertracing SHARED ${SRC})
-  if (WIN32)
+add_library(jaegertracing SHARED ${SRC})
+if (WIN32)
     target_compile_definitions(jaegertracing PUBLIC YAML_CPP_DLL)
     target_link_libraries(jaegertracing PUBLIC Iphlpapi Ws2_32)
-  endif()
-  add_lib_deps(jaegertracing)
-  set_target_properties(jaegertracing PROPERTIES
+endif()
+add_lib_deps(jaegertracing)
+set_target_properties(jaegertracing PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR})
-  set(JAEGERTRACING_LIB jaegertracing)
-  list(APPEND JAEGERTRACING_LIBS jaegertracing)
-endif()
+set(JAEGERTRACING_LIB jaegertracing)
+list(APPEND JAEGERTRACING_LIBS jaegertracing)
 
 
 if(JAEGERTRACING_PLUGIN)
@@ -263,22 +261,6 @@ if(JAEGERTRACING_PLUGIN)
     -static-libstdc++
     -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/export.map)
 endif()
-
-add_library(jaegertracing-static STATIC ${SRC})
-if (NOT WIN32)
-  #on windows, the shared library generate also a .lib file
-  set_target_properties(jaegertracing-static PROPERTIES OUTPUT_NAME jaegertracing)
-endif()
-
-add_lib_deps(jaegertracing-static)
-if (WIN32)
-  target_link_libraries(jaegertracing-static PUBLIC Iphlpapi Ws2_32)
-endif()
-
-if(NOT JAEGERTRACING_LIB)
-  set(JAEGERTRACING_LIB jaegertracing-static)
-endif()
-list(APPEND JAEGERTRACING_LIBS jaegertracing-static)
 
 configure_file(
   src/jaegertracing/Constants.h.in
